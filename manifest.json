@@ -1,8 +1,8 @@
 {
     "name": "Wykop Monitor",
-    "version": "0.1",
+    "version": "0.2",
   
-    "description": "Rozszerzenie do sprawdzania powiadomień na portalu wykop.pl",
+    "description": "Rozszerzenie pokazuje powiadomienia portalu wykop.pl",
     "icons": { 
         "16": "img/16.png",
         "48": "img/48.png",
