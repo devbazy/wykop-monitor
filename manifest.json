@@ -1,0 +1,24 @@
+{
+    "name": "Wykop Monitor",
+    "version": "0.1",
+  
+    "description": "Rozszerzenie do sprawdzania powiadomień na portalu wykop.pl",
+    "icons": { 
+        "16": "img/16.png",
+        "48": "img/48.png",
+        "128": "img/128.png"
+    },
+    "content_scripts": [{
+        "matches" : ["http://www.wykop.pl/moj/powiadomienia/"],
+        "all_frames": true,
+        "js": [ "js/wykop.js" ],        
+        "run_at": "document_idle"
+    }],
+    "browser_action": {
+        "default_icon": "img/19.png",
+        "default_title": "Zobacz powiadomienia",
+        "default_popup": "popup.html"
+    },  
+    "background_page": "background.html",
+    "permissions": []
+}

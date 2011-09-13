@@ -1,0 +1,42 @@
+<!doctype html>
+<head>
+    <script>
+        window.onload = function(){
+            var bck = chrome.extension.getBackgroundPage();
+            var notifications = bck.notifications;
+            var list = document.getElementById('notification');
+            for(var i = 0, c = notifications.length > 10 ? 10 : notifications.length; i < c; i++){
+                var e = document.createElement("li");
+                e.innerHTML = notifications[i].html;
+                list.appendChild(e);
+            }
+            bck.news = 0;
+            bck.setBadge();            
+        }
+    </script>
+    <link rel="stylesheet" type="text/css"  href="css/wykop.css" />
+    <style>
+        html {
+            overflow: hidden;
+            width: 650px;
+        }
+
+        .wrapper {
+            width: 650px !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="illustration">
+        <div id="body-container">
+            <div class="wrapper">
+                <div id="content">
+                    <ul id="notification" class="entry-list-notification">
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

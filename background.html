@@ -1,0 +1,97 @@
+<script>
+    var pollIntervalMin = 1000 * 60;  // 1 minute
+    var pollIntervalMax = 1000 * 60 * 10; // 10 minutes
+    var requestFailureCount = 0;  // used for exponential backoff
+    var requestTimeout = 1000 * 10;
+    var options = {};
+    var result = false; // current data
+    var scheduled = false;
+    var notifications = [];
+    var news = 0;
+    var tid; // timeout id
+    
+    chrome.browserAction.setBadgeBackgroundColor({
+        color: [255, 0, 0, 255]
+    });
+    
+    function scheduleRequest() {
+        if(!scheduled){
+            scheduled = true;
+            var randomness = Math.random() * 2;
+            var exponent = Math.pow(2, requestFailureCount);
+            var delay = Math.min(randomness * pollIntervalMin * exponent, 
+            pollIntervalMax);
+            delay = Math.round(delay);
+
+            window.setTimeout(startRequest, delay); 
+        }       
+    }
+    
+    chrome.extension.onRequest.addListener(function(request, sender) {
+        clearTimeout(tid);
+        
+        // opened in the real tab
+        if(sender.tab !== null){
+            news = 0;
+        }
+        console.log(request);
+        result = true;
+        if(request.notifications !== undefined){            
+            notifications = request.notifications;
+            
+            var badge = 0;
+            for(var i = 0; i < notifications.length; i++){
+                if(notifications[i]['new']){
+                    badge++;
+                }
+            }
+            badge = 3;
+            news = news > badge ? news : badge;
+            setBadge();
+        }else {
+            chrome.browserAction.setBadgeText({
+                text: "!"
+            });
+        }    
+        scheduleRequest();
+    });
+           
+    function src(){
+        try{
+            document.getElementById('temp').src = 'http://www.wykop.pl/moj/powiadomienia/';            
+        }catch(e){
+            console.log('error!')
+        }   
+    }
+
+    function setBadge(){
+        if(news){
+            chrome.browserAction.setBadgeText({
+                text: news.toString()
+            });
+        }else {
+            chrome.browserAction.setBadgeText({
+                text: ''
+            });
+        }
+    }
+    
+    function startRequest() {
+        result = false;
+        scheduled = false;
+        src();
+        tid = setTimeout(function(){
+            if(!result){
+                // logged out probably
+                chrome.browserAction.setBadgeText({
+                    text: "!"
+                });
+                scheduleRequest();
+            }
+        }, requestTimeout); 
+    }
+    window.onload = function(){
+        startRequest();    
+    }    
+</script>
+<iframe id="temp"></iframe>
