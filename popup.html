@@ -7,6 +7,9 @@
             var list = document.getElementById('notification');
             for(var i = 0, c = notifications.length > 10 ? 10 : notifications.length; i < c; i++){
                 var e = document.createElement("li");
+                if(notifications[i]['new']){
+                    e.className = 'new';
+                }
                 e.innerHTML = notifications[i].html;
                 list.appendChild(e);
             }
