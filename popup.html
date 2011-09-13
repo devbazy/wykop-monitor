@@ -13,6 +13,12 @@
                 e.innerHTML = notifications[i].html;
                 list.appendChild(e);
             }
+            var a = document.getElementsByTagName('a');
+            for(var i = 0; i < a.length; i++){
+                a[i].addEventListener('click', function(e){
+                    chrome.tabs.create({url: this.getAttribute('href')});
+                });
+            }            
             bck.news = 0;
             bck.setBadge();            
         }
