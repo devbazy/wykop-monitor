@@ -3,24 +3,33 @@
     <script>
         window.onload = function(){
             var bck = chrome.extension.getBackgroundPage();
-            var notifications = bck.notifications;
             var list = document.getElementById('notification');
-            for(var i = 0, c = notifications.length > 10 ? 10 : notifications.length; i < c; i++){
-                var e = document.createElement("li");
-                if(notifications[i]['new'] || i < bck.news){
-                    e.className = 'new';
+            
+            if(bck.logged) {
+                var notifications = bck.notifications;
+               
+                for(var i = 0, c = notifications.length > 10 ? 10 : notifications.length; i < c; i++){
+                    var e = document.createElement("li");
+                    if(notifications[i]['new'] || i < bck.news){
+                        e.className = 'new';
+                    }
+                    e.innerHTML = notifications[i].html;
+                    list.appendChild(e);
                 }
-                e.innerHTML = notifications[i].html;
-                list.appendChild(e);
+                         
+                bck.news = 0;
+                bck.setBadge(); 
+            }else {
+                document.getElementById('content').innerHTML = 'Zaloguj siê na <a href="http://wykop.pl">wykop.pl</a>';
             }
+            
+            // make link clickable
             var a = document.getElementsByTagName('a');
             for(var i = 0; i < a.length; i++){
                 a[i].addEventListener('click', function(e){
                     chrome.tabs.create({url: this.getAttribute('href')});
                 });
-            }            
-            bck.news = 0;
-            bck.setBadge();            
+            }  
         }
     </script>
     <link rel="stylesheet" type="text/css"  href="css/wykop.css" />

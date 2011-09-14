@@ -4,11 +4,11 @@
     var requestFailureCount = 0;  // used for exponential backoff
     var requestTimeout = 1000 * 10;
     var options = {};
-    var result = false; // current data
     var scheduled = false;
     var notifications = [];
     var news = 0;
     var tid; // timeout id
+    var logged = false;
     
     chrome.browserAction.setBadgeBackgroundColor({
         color: [255, 0, 0, 255]
@@ -28,41 +28,36 @@
     }
     
     chrome.extension.onRequest.addListener(function(request, sender) {
-        clearTimeout(tid);
-        
-        // opened in the real tab
-        if(sender.tab !== null){
-            news = 0;
-        }
         console.log(request);
-        result = true;
-        if(request.notifications !== undefined){            
+        
+        clearTimeout(tid);
+        logged = request.logged;
+        
+        if(request.hasOwnProperty('notifications')){
             notifications = request.notifications;
             
-            var badge = 0;
-            for(var i = 0; i < notifications.length; i++){
-                if(notifications[i]['new']){
-                    badge++;
+            if(sender.tab){
+                // real browser
+                news = 0;
+            }else {
+                var badge = 0;
+                for(var i = 0; i < notifications.length; i++){
+                    if(notifications[i]['new']){
+                        badge++;
+                    }
                 }
+                news += badge;
             }
-
-            news = news > badge ? news : badge;
-            setBadge();
-        }else {
-            chrome.browserAction.setBadgeText({
-                text: "!"
-            });
-        }    
-        scheduleRequest();
+        }
+       
+        setBadge();
+            
+        if(request.news){
+            startRequest();
+        }else{
+            scheduleRequest();   
+        }
     });
-           
-    function src(){
-        try{
-            document.getElementById('temp').src = 'http://www.wykop.pl/moj/powiadomienia/';            
-        }catch(e){
-            console.log('error!')
-        }   
-    }
 
     function setBadge(){
         if(news){
@@ -77,17 +72,17 @@
     }
     
     function startRequest() {
-        result = false;
         scheduled = false;
-        src();
+        
+        document.getElementById('temp').src = 'http://www.wykop.pl/moj/powiadomienia/';  
+         
         tid = setTimeout(function(){
-            if(!result){
-                // logged out probably
-                chrome.browserAction.setBadgeText({
-                    text: "!"
-                });
-                scheduleRequest();
-            }
+            // probably logged out
+            chrome.browserAction.setBadgeText({
+                text: "!"
+            });
+            logged = false;
+            scheduleRequest();
         }, requestTimeout); 
     }
     window.onload = function(){
