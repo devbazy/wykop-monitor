@@ -2,26 +2,73 @@
 <head>
     <script>
         window.onload = function(){
-            var bck = chrome.extension.getBackgroundPage();
+            var bg = chrome.extension.getBackgroundPage();
             var list = document.getElementById('notification');
             
-            if(bck.logged) {
-                var notifications = bck.notifications;
+            if(bg.logged) {
+                var notifications = bg.notifications;
                
                 for(var i = 0, c = notifications.length > 10 ? 10 : notifications.length; i < c; i++){
                     var e = document.createElement("li");
-                    if(notifications[i]['new'] || i < bck.news){
+                    if(notifications[i]['new'] || i < bg.news){
                         e.className = 'new';
                     }
                     e.innerHTML = notifications[i].html;
                     list.appendChild(e);
                 }
                          
-                bck.news = 0;
-                bck.setBadge(); 
+                bg.news = 0;
+                bg.setBadge(); 
             }else {
                 document.getElementById('content').innerHTML = 'Zaloguj siê na <a href="http://wykop.pl">wykop.pl</a>';
             }
+            
+            chrome.tabs.getSelected(null, function(tab) {
+                if(bg.urls[tab.url]){
+                    var link = bg.urls[tab.url];
+                    var b = document.createElement('blockquote');                    
+                    var span = document.createElement('span');
+                    span.className = 'votecount';
+                    span.textContent = link.vote_count;
+                    
+                    var a1 = document.createElement('a');
+                    a1.className = 'vote jvote';
+                    a1.setAttribute('href', link.url);
+                    a1.setAttribute('target', '_blank');
+                    a1.appendChild(span);
+                    
+                    var img = document.createElement('img');
+                    img.setAttribute('src', link.preview);
+                    img.setAttribute('width', 104);
+                    img.setAttribute('height', 74);
+                    var a2 = document.createElement('a');
+                    a2.className = 'image';
+                    a2.setAttribute('href', link.url);
+                    a2.setAttribute('target', '_blank');
+                    a2.appendChild(img);
+                    
+                    var div = document.createElement('div');
+                    var h4 = document.createElement('h4');
+                    var a = document.createElement('a');
+                    a.innerHTML = '<em>' + link.title + '</em>';
+                    a.setAttribute('href', link.url);
+                    a.setAttribute('target', '_blank');
+                    h4.appendChild(a);
+                                
+                    var p = document.createElement('p');
+                    a = document.createElement('a');
+                    a.textContent = link.description;
+                    p.appendChild(a);
+                    
+                    div.appendChild(h4);
+                    div.appendChild(p);
+                                
+                    b.appendChild(a1);
+                    b.appendChild(a2);
+                    b.appendChild(div);
+                    document.getElementById('entry').appendChild(b);
+                }
+            });
             
             // make link clickable
             var a = document.getElementsByTagName('a');
@@ -49,6 +96,10 @@
         <div id="body-container">
             <div class="wrapper">
                 <div id="content">
+                    <ol class="entry">
+                        <li id="entry"></li>
+                    </ol>
+
                     <ul id="notification" class="entry-list-notification">
 
                     </ul>

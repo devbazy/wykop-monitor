@@ -9,10 +9,8 @@
     var news = 0;
     var tid; // timeout id
     var logged = false;
-    
-    chrome.browserAction.setBadgeBackgroundColor({
-        color: [255, 0, 0, 255]
-    });
+    var api =  'http://a.wykop.pl/search/index/appkey,h7Rfg78hSg,output,clear';
+    var urls = {};
     
     function scheduleRequest() {
         if(!scheduled){
@@ -72,6 +70,10 @@
 
     function setBadge(){
         if(news){
+            chrome.browserAction.setBadgeBackgroundColor({
+                color: [255, 0, 0, 255]
+            });
+            
             chrome.browserAction.setBadgeText({
                 text: news.toString()
             });
@@ -97,6 +99,60 @@
             scheduleRequest();
         }, requestTimeout); 
     }
+    
+    function setDiggs(tabId, diggs){
+        // set diggs only where is no notifications
+        if(!news){
+            chrome.browserAction.setBadgeBackgroundColor({                
+                color :  [87, 153, 195, 255],
+                tabId : tabId
+            });
+            
+            chrome.browserAction.setBadgeText({
+                text : diggs.toString(),
+                tabId : tabId
+            });
+        }
+    }
+    
+    chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+        var url = tab.url;
+        var tid = tabId;
+        
+        if (urls.hasOwnProperty(url) && urls[url]){
+            setDiggs(tid, urls[url].vote_count);
+        } 
+        
+        if (changeInfo.url) {
+            if (changeInfo.url.match(/^http/) && !changeInfo.url.match(/^.*\.wykop.pl\//) ){
+                var xhr = new XMLHttpRequest();                
+                try {
+                    xhr.onreadystatechange = function(){
+                        if (xhr.readyState != 4){
+                            return;
+                        }
+                
+                        if (xhr.status == 200 && xhr.responseText != ""){
+                            var response = JSON.parse(xhr.responseText);
+                        
+                            if (response.length > 0 && url == response[0].source_url ) {
+                                urls[url] = response[0];
+                                setDiggs(tid, urls[url].vote_count);
+                            } else {
+                                urls[url] = null;                            
+                            }
+                        }
+                    }
+                    xhr.open('POST', api, true);
+                    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                    xhr.send('url=' + encodeURIComponent(changeInfo.url));
+                }catch(e){
+                    console.log('xhr exception');
+                }
+            }
+        }
+    });
+    
     window.onload = function(){
         startRequest();    
     }    

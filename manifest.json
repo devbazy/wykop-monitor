@@ -1,6 +1,6 @@
 {
     "name": "Wykop Monitor",
-    "version": "0.3.2",
+    "version": "0.4",
   
     "description": "Rozszerzenie pokazuje powiadomienia portalu wykop.pl",
     "icons": { 
@@ -20,5 +20,5 @@
         "default_popup": "popup.html"
     },  
     "background_page": "background.html",
-    "permissions": ["tabs"]
+    "permissions": ["tabs", "http://a.wykop.pl/*"]
 }
