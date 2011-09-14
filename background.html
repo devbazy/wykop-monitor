@@ -119,9 +119,7 @@
         var url = tab.url;
         var tid = tabId;
         
-        if (urls.hasOwnProperty(url) && urls[url]){
-            setDiggs(tid, urls[url].vote_count);
-        } 
+        setBadge();
         
         if (changeInfo.url) {
             if (changeInfo.url.match(/^http/) && !changeInfo.url.match(/^.*\.wykop.pl\//) ){
@@ -151,6 +149,10 @@
                 }
             }
         }
+        
+        if (urls.hasOwnProperty(url) && urls[url]){
+            setDiggs(tid, urls[url].vote_count);
+        } 
     });
     
     window.onload = function(){
