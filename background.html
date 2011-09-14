@@ -31,7 +31,24 @@
         console.log(request);
         
         clearTimeout(tid);
+        
+        if(request.news || logged != request.logged){
+            startRequest();
+        }else{
+            scheduleRequest();   
+        }
+        
         logged = request.logged;
+        
+        if(logged){
+            chrome.browserAction.setIcon({
+                path: 'img/19.png'
+            });
+        }else {
+            chrome.browserAction.setIcon({
+                path: 'img/19bw.png'
+            });
+        }
         
         if(request.hasOwnProperty('notifications')){
             notifications = request.notifications;
@@ -51,12 +68,6 @@
         }
        
         setBadge();
-            
-        if(request.news){
-            startRequest();
-        }else{
-            scheduleRequest();   
-        }
     });
 
     function setBadge(){
@@ -78,9 +89,10 @@
          
         tid = setTimeout(function(){
             // probably logged out
-            chrome.browserAction.setBadgeText({
-                text: "!"
+            chrome.browserAction.setIcon({
+                path: 'img/19bw.png'
             });
+            
             logged = false;
             scheduleRequest();
         }, requestTimeout); 
