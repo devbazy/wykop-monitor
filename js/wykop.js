@@ -4,7 +4,7 @@ var data = {
 };
 
 
-if(document.querySelector('#content .entry-list-notification')){
+if(document.querySelector('#content .entry-list-notification') !== null){
     var notifications = document.querySelectorAll('#content .entry-list-notification li');
     var result = [];
     for(var i = 0; i < notifications.length; i++){
