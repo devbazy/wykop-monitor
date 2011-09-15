@@ -1,111 +1,113 @@
 <!doctype html>
-<head>
-    <script>
-        window.onload = function(){
-            var bg = chrome.extension.getBackgroundPage();
-            var list = document.getElementById('notification');
+<html>
+    <head>
+        <title></title>
+        <script>
+            window.onload = function(){
+                var bg = chrome.extension.getBackgroundPage();
+                var list = document.getElementById('notification');
             
-            if(bg.logged) {
-                var notifications = bg.notifications;
+                if(bg.logged) {
+                    var notifications = bg.notifications;
                
-                for(var i = 0, c = notifications.length > 10 ? 10 : notifications.length; i < c; i++){
-                    var e = document.createElement("li");
-                    if(notifications[i]['new'] || i < bg.news){
-                        e.className = 'new';
+                    for(var i = 0, c = notifications.length > 10 ? 10 : notifications.length; i < c; i++){
+                        var e = document.createElement("li");
+                        if(notifications[i]['new'] || i < bg.news){
+                            e.className = 'new';
+                        }
+                        e.innerHTML = notifications[i].html;
+                        list.appendChild(e);
                     }
-                    e.innerHTML = notifications[i].html;
-                    list.appendChild(e);
-                }
                          
-                bg.news = 0;
-                bg.setBadge(); 
-            }else {
-                document.getElementById('content').innerHTML = 'Zaloguj siê na <a href="http://wykop.pl">wykop.pl</a>';
-            }
-            
-            chrome.tabs.getSelected(null, function(tab) {
-                if(bg.urls[tab.url]){
-                    var link = bg.urls[tab.url];
-                    var b = document.createElement('blockquote');                    
-                    var span = document.createElement('span');
-                    span.className = 'votecount';
-                    span.textContent = link.vote_count;
-                    
-                    var a1 = document.createElement('a');
-                    a1.className = 'vote jvote';
-                    a1.setAttribute('href', link.url);
-                    a1.setAttribute('target', '_blank');
-                    a1.appendChild(span);
-                    
-                    var img = document.createElement('img');
-                    img.setAttribute('src', link.preview);
-                    img.setAttribute('width', 104);
-                    img.setAttribute('height', 74);
-                    var a2 = document.createElement('a');
-                    a2.className = 'image';
-                    a2.setAttribute('href', link.url);
-                    a2.setAttribute('target', '_blank');
-                    a2.appendChild(img);
-                    
-                    var div = document.createElement('div');
-                    var h4 = document.createElement('h4');
-                    var a = document.createElement('a');
-                    a.innerHTML = '<em>' + link.title + '</em>';
-                    a.setAttribute('href', link.url);
-                    a.setAttribute('target', '_blank');
-                    h4.appendChild(a);
-                                
-                    var p = document.createElement('p');
-                    a = document.createElement('a');
-                    a.textContent = link.description;
-                    p.appendChild(a);
-                    
-                    div.appendChild(h4);
-                    div.appendChild(p);
-                                
-                    b.appendChild(a1);
-                    b.appendChild(a2);
-                    b.appendChild(div);
-                    document.getElementById('entry').appendChild(b);
+                    bg.news = 0;
+                    bg.updateBadge(); 
+                }else {
+                    document.getElementById('content').innerHTML = 'Zaloguj siê na <a href="http://wykop.pl">wykop.pl</a>';
                 }
-            });
             
-            // make link clickable
-            var a = document.getElementsByTagName('a');
-            for(var i = 0; i < a.length; i++){
-                a[i].addEventListener('click', function(e){
-                    chrome.tabs.create({url: this.getAttribute('href')});
+                chrome.tabs.getSelected(null, function(tab) {
+                    if(bg.urls[tab.url]){
+                        var link = bg.urls[tab.url];
+                        var b = document.createElement('blockquote');                    
+                        var span = document.createElement('span');
+                        span.className = 'votecount';
+                        span.textContent = link.vote_count;
+                    
+                        var a1 = document.createElement('a');
+                        a1.className = 'vote jvote';
+                        a1.setAttribute('href', link.url);
+                        a1.setAttribute('target', '_blank');
+                        a1.appendChild(span);
+                    
+                        var img = document.createElement('img');
+                        img.setAttribute('src', link.preview);
+                        img.setAttribute('width', 104);
+                        img.setAttribute('height', 74);
+                        var a2 = document.createElement('a');
+                        a2.className = 'image';
+                        a2.setAttribute('href', link.url);
+                        a2.setAttribute('target', '_blank');
+                        a2.appendChild(img);
+                    
+                        var div = document.createElement('div');
+                        var h4 = document.createElement('h4');
+                        var a = document.createElement('a');
+                        a.innerHTML = '<em>' + link.title + '</em>';
+                        a.setAttribute('href', link.url);
+                        a.setAttribute('target', '_blank');
+                        h4.appendChild(a);
+                                
+                        var p = document.createElement('p');
+                        a = document.createElement('a');
+                        a.textContent = link.description;
+                        p.appendChild(a);
+                    
+                        div.appendChild(h4);
+                        div.appendChild(p);
+                                
+                        b.appendChild(a1);
+                        b.appendChild(a2);
+                        b.appendChild(div);
+                        document.getElementById('entry').appendChild(b);
+                    }
                 });
-            }  
-        }
-    </script>
-    <link rel="stylesheet" type="text/css"  href="css/wykop.css" />
-    <style>
-        html {
-            overflow: hidden;
-            width: 650px;
-        }
+            
+                // make link clickable
+                var a = document.getElementsByTagName('a');
+                for(var i = 0; i < a.length; i++){
+                    a[i].addEventListener('click', function(e){
+                        chrome.tabs.create({url: this.getAttribute('href')});
+                    });
+                }  
+            }
+        </script>
+        <link rel="stylesheet" type="text/css"  href="css/wykop.css" />
+        <style>
+            html {
+                overflow: hidden;
+                width: 650px;
+            }
 
-        .wrapper {
-            width: 650px !important;
-        }
-    </style>
-</head>
-<body>
-    <div id="illustration">
-        <div id="body-container">
-            <div class="wrapper">
-                <div id="content">
-                    <ol class="entry">
-                        <li id="entry"></li>
-                    </ol>
+            .wrapper {
+                width: 650px !important;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="illustration">
+            <div id="body-container">
+                <div class="wrapper">
+                    <div id="content">
+                        <ol class="entry">
+                            <li id="entry"></li>
+                        </ol>
 
-                    <ul id="notification" class="entry-list-notification">
+                        <ul id="notification" class="entry-list-notification">
 
-                    </ul>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</body>
+    </body>
 </html>

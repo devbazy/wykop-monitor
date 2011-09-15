@@ -1,8 +1,14 @@
 var data = {
-    logged: !document.getElementById('quick-login'),
     news: 0
 };
 
+if(document.getElementById('header-container')){
+    if(document.getElementById('quick-login') !== null){
+        data.logged = false;
+    }else if(document.querySelector('.user-panel') !== null){
+        data.logged = true;
+    }
+}
 
 if(document.querySelector('#content .entry-list-notification') !== null){
     var notifications = document.querySelectorAll('#content .entry-list-notification li');

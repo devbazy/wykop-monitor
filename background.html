@@ -11,6 +11,7 @@
     var logged = false;
     var api =  'http://a.wykop.pl/search/index/appkey,h7Rfg78hSg,output,clear';
     var urls = {};
+    var tabs = {};
     
     function scheduleRequest() {
         if(!scheduled){
@@ -36,17 +37,19 @@
             scheduleRequest();   
         }
         
-        logged = request.logged;
+        if(request.hasOwnProperty('logged')){
+            logged = request.logged;
         
-        if(logged){
-            chrome.browserAction.setIcon({
-                path: 'img/19.png'
-            });
-        }else {
-            chrome.browserAction.setIcon({
-                path: 'img/19bw.png'
-            });
-        }
+            if(logged){
+                chrome.browserAction.setIcon({
+                    path: 'img/19.png'
+                });
+            }else {
+                chrome.browserAction.setIcon({
+                    path: 'img/19bw.png'
+                });
+            }
+        }        
         
         if(request.hasOwnProperty('notifications')){
             notifications = request.notifications;
@@ -64,11 +67,11 @@
                 news += badge;
             }
         }
-       
-        setBadge();
+        localStorage.news = news;
+        updateBadge();
     });
 
-    function setBadge(){
+    function updateBadge(tabId){
         if(news){
             chrome.browserAction.setBadgeBackgroundColor({
                 color: [255, 0, 0, 255]
@@ -77,7 +80,42 @@
             chrome.browserAction.setBadgeText({
                 text: news.toString()
             });
-        }else {
+            
+            // force diggs overwrite
+            for(var id in tabs){
+                if(tabs[id]){
+                    // keys in object are always strings...
+                    id = parseInt(id, 10);
+                    chrome.browserAction.setBadgeBackgroundColor({
+                        color: [255, 0, 0, 255],
+                        tabId : id
+                    });
+            
+                    chrome.browserAction.setBadgeText({
+                        text: news.toString(),
+                        tabId : id
+                    });
+                }
+            }
+        } else {
+            for(var id in tabs){
+                if(tabs[id]){
+                    // keys in object are always strings...
+                    id = parseInt(id, 10);
+                   
+                    chrome.browserAction.setBadgeBackgroundColor({                
+                        color :  [87, 153, 195, 255],
+                        tabId : id
+                    });
+            
+                    chrome.browserAction.setBadgeText({
+                        text : tabs[id].toString(),
+                        tabId : id
+                    });
+                }else {
+                    
+                }
+            }
             chrome.browserAction.setBadgeText({
                 text: ''
             });
@@ -100,26 +138,9 @@
         }, requestTimeout); 
     }
     
-    function setDiggs(tabId, diggs){
-        // set diggs only where is no notifications
-        if(!news){
-            chrome.browserAction.setBadgeBackgroundColor({                
-                color :  [87, 153, 195, 255],
-                tabId : tabId
-            });
-            
-            chrome.browserAction.setBadgeText({
-                text : diggs.toString(),
-                tabId : tabId
-            });
-        }
-    }
-    
     chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
         var url = tab.url;
         var tid = tabId;
-        
-        setBadge();
         
         if (changeInfo.url) {
             if (changeInfo.url.match(/^http/) && !changeInfo.url.match(/^.*\.wykop.pl\//) ){
@@ -135,10 +156,12 @@
                         
                             if (response.length > 0 && url == response[0].source_url ) {
                                 urls[url] = response[0];
-                                setDiggs(tid, urls[url].vote_count);
+                                tabs[tid] = urls[url].vote_count;
                             } else {
-                                urls[url] = null;                            
+                                urls[url] = null;
+                                tabs[tid] = 0;
                             }
+                            updateBadge(tid);
                         }
                     }
                     xhr.open('POST', api, true);
@@ -151,12 +174,20 @@
         }
         
         if (urls.hasOwnProperty(url) && urls[url]){
-            setDiggs(tid, urls[url].vote_count);
+            tabs[tid] = urls[url].vote_count;
+            updateBadge(tid);
+        }else {
+            updateBadge();
         } 
     });
     
     window.onload = function(){
-        startRequest();    
+        if(localStorage.news){
+            news = parseInt(localStorage.news, 10);
+            news = isNaN(news) ? 0 : news;
+        }
+        updateBadge();
+        startRequest();
     }    
 </script>
 <iframe id="temp"></iframe>
