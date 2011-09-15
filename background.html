@@ -2,7 +2,7 @@
     var pollIntervalMin = 1000 * 60;  // 1 minute
     var pollIntervalMax = 1000 * 60 * 10; // 10 minutes
     var requestFailureCount = 0;  // used for exponential backoff
-    var requestTimeout = 1000 * 10;
+    var requestTimeout = 1000 * 15;
     var options = {};
     var scheduled = false;
     var notifications = [];
@@ -39,16 +39,7 @@
         
         if(request.hasOwnProperty('logged')){
             logged = request.logged;
-        
-            if(logged){
-                chrome.browserAction.setIcon({
-                    path: 'img/19.png'
-                });
-            }else {
-                chrome.browserAction.setIcon({
-                    path: 'img/19bw.png'
-                });
-            }
+            updateIcon();           
         }        
         
         if(request.hasOwnProperty('notifications')){
@@ -122,6 +113,18 @@
         }
     }
     
+    function updateIcon(){
+        if(logged){
+            chrome.browserAction.setIcon({
+                path: 'img/19.png'
+            });
+        }else {
+            chrome.browserAction.setIcon({
+                path: 'img/19bw.png'
+            });
+        }
+    }
+    
     function startRequest() {
         scheduled = false;
         
@@ -129,11 +132,8 @@
          
         tid = setTimeout(function(){
             // probably logged out
-            chrome.browserAction.setIcon({
-                path: 'img/19bw.png'
-            });
-            
             logged = false;
+            updateIcon();
             scheduleRequest();
         }, requestTimeout); 
     }
