@@ -18,29 +18,20 @@ if(document.getElementById('header-container')){
 //    data.notifications = result;
 //}
 
+document.getElementById('notificationsBtn').addEventListener('click', function(){
+    var spans = document.querySelector('#notificationsBtn span');
+    if(spans[1]){
+        document.getElementById('notificationsBtn').removeChild(spans[1]);
+    }
+});
 
 chrome.extension.sendRequest(data, function(answer){
     if(answer.news){
-        var list = document.getElementById('sub-list').getElementsByTagName('ul')[0]; // #sublist ul
-        if(list){
-            var li = document.createElement('li');    
-            li.className = 'right';
-            li.innerHTML = '<div><a href="http://www.wykop.pl/moj/powiadomienia/" title="Zobacz nowe powiadomienia">Masz nowe powiadomienia (' +  answer.news + ')</a></div>';
-            list.insertBefore(li, list.childNodes[0]);
-    
-            li = document.createElement('li');
-            li.className = 'right check';
-            li.innerHTML = '<div><a href="http://www.wykop.pl/moj/powiadomienia/" title="Zobacz nowe powiadomienia">Sprawdź</a></div>';
-            list.insertBefore(li, list.childNodes[0]);
-        }
-    }
-    
-    if(answer.newstemp){
-        if(document.querySelector('#content .entry-list-notification') !== null){
-            var notifications = document.querySelectorAll('#content .entry-list-notification li');
-            for(var i = 0; i < answer.newstemp; i++){
-                notifications[i].className = 'new';
-            }
+        if(document.getElementById('notificationsBtn')){
+            var span = document.createElement('span');
+            span.className = 'abs count x-small br3';
+            span.textContent = answer.news;
+            document.getElementById('notificationsBtn').appendChild(span);
         }
     }
 });

@@ -166,6 +166,7 @@
         var error = function(){
             logged = false;
             updateIcon();
+            scheduleRequest();
         }
     
         ajax('http://www.wykop.pl/ajax/notifications/count', function(data){
@@ -178,6 +179,7 @@
                 }
                 logged = true;
                 updateIcon();
+                updateBadge();
             }
         }, error);
     };
@@ -187,6 +189,7 @@
         var error = function(){
             logged = false;
             updateIcon();
+            scheduleRequest();
         }
     
         ajax('http://www.wykop.pl/ajax/notifications', function(data){
@@ -221,7 +224,7 @@
     }
     
     function startRequest() {
-        updateNotifications();
+        checkNotifications();
     }
     
     chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
