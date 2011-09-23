@@ -3,9 +3,26 @@
     <head>
         <title></title>
         <script>
+            function substitute(string, object, regexp){
+                return string.replace(regexp || (/\\?\{([^{}]+)\}/g), function(match, name){
+                    if (match.charAt(0) == '\\') return match.slice(1);
+                    return (object[name] != null) ? object[name] : '';
+                });
+            }
+            
+            function clickable(){
+                // make links clickable
+                var a = document.getElementsByTagName('a');
+                for(var i = 0; i < a.length; i++){
+                    a[i].addEventListener('click', function(e){
+                        chrome.tabs.create({url: this.getAttribute('href')});
+                    });
+                }  
+            }
+            
             window.onload = function(){
                 var bg = chrome.extension.getBackgroundPage();
-                var list = document.getElementById('notification');
+                var list = document.getElementById('notifications');
             
                 if(bg.logged) {
                     var notifications = bg.notifications;
@@ -15,6 +32,7 @@
                         if(notifications[i]['new'] || i < bg.news){
                             e.className = 'new';
                         }
+                        e.className = 'brbotte8';
                         e.innerHTML = notifications[i].html;
                         list.appendChild(e);
                     }
@@ -22,91 +40,68 @@
                     bg.news = 0;
                     bg.updateBadge(); 
                 }else {
-                    document.getElementById('content').innerHTML = 'Zaloguj siê na <a href="http://wykop.pl">wykop.pl</a>';
+                    document.getElementById('content').innerHTML = 'Zaloguj siÄ™ na <a href="http://wykop.pl">wykop.pl</a>';
                 }
+                clickable();
             
                 chrome.tabs.getSelected(null, function(tab) {
                     if(bg.urls[tab.url]){
-                        var link = bg.urls[tab.url];
-                        var b = document.createElement('blockquote');                    
-                        var span = document.createElement('span');
-                        span.className = 'votecount';
-                        span.textContent = link.vote_count;
-                    
-                        var a1 = document.createElement('a');
-                        a1.className = 'vote jvote';
-                        a1.setAttribute('href', link.url);
-                        a1.setAttribute('target', '_blank');
-                        a1.appendChild(span);
-                    
-                        var img = document.createElement('img');
-                        img.setAttribute('src', link.preview);
-                        img.setAttribute('width', 104);
-                        img.setAttribute('height', 74);
-                        var a2 = document.createElement('a');
-                        a2.className = 'image';
-                        a2.setAttribute('href', link.url);
-                        a2.setAttribute('target', '_blank');
-                        a2.appendChild(img);
-                    
-                        var div = document.createElement('div');
-                        var h4 = document.createElement('h4');
-                        var a = document.createElement('a');
-                        a.innerHTML = '<em>' + link.title + '</em>';
-                        a.setAttribute('href', link.url);
-                        a.setAttribute('target', '_blank');
-                        h4.appendChild(a);
-                                
-                        var p = document.createElement('p');
-                        a = document.createElement('a');
-                        a.textContent = link.description;
-                        p.appendChild(a);
-                    
-                        div.appendChild(h4);
-                        div.appendChild(p);
-                                
-                        b.appendChild(a1);
-                        b.appendChild(a2);
-                        b.appendChild(div);
-                        document.getElementById('entry').appendChild(b);
+                        
+                        var parts = bg.urls[tab.url].source_url.match(/^((http[s]?|ftp):\/\/)?\/?([^:\/\s]+)((\/\w+)*\/)([\w\-\.]+[^#?\s]+)(.*?)?(#[\w\-]+)?$/);
+                        bg.urls[tab.url].source_url_domain = parts[3].replace(/^www\./, '');
+                        
+                        var tpl = '<article class="entry brbotte8 pding15_0">' +
+                            '<div class="clr rel"><div class="fleft diggbox">' +
+                            '<a href="http://www.wykop.pl/link/dig/%7E2/886753/6d917ad49a5e0b15ecc3f3cbcee87d9f-1316736671/log_ref_0,index,log_ref_m_0,index,log_ref_n_0," class="block tcenter tdnone diggit ">' +
+                            '<span class="icon inlblk diggcount cff5917 large fbold vtop animated ">{vote_count}</span>' +
+                            '<span class="block action small br3 bre3">wykop</span></a></div>' +
+                            '<a href="{url}" class="image rel fright"><img src="{preview}" alt="{title}" class="fright border marginleft15" width="104" height="74"></a>' +
+                            '<div class="content"><header><h2 class="xx-large lheight20">' +
+                            '<a href="{url}" class="link"><span class="fbold">{title}</span></a></h2>' +
+                            '<span>{author}</span></a> z <a href="{source_url}" rel="nofollow" class="link gray" title=""><span>{source_url_domain}</span></a>' +
+                            '<a href="{url}" class="marginleft10 caf small tdnone">' +
+                            '<span class="icon inlblk comments mini vtop margintop5 ">&nbsp;</span> ' +
+                            '<span class="hvline link gray">{comment_count} komentarzy</span></a></p></header>' +
+                            '<p class="lheight18"><a href="{url}" class="block ce1"><span class="c22">{description}</span></a></p>' +
+                            '</div></div></article>';
+                        document.getElementById('entry').innerHTML = substitute(tpl, bg.urls[tab.url]);
+                        clickable();
                     }
-                });
-            
-                // make link clickable
-                var a = document.getElementsByTagName('a');
-                for(var i = 0; i < a.length; i++){
-                    a[i].addEventListener('click', function(e){
-                        chrome.tabs.create({url: this.getAttribute('href')});
-                    });
-                }  
+                });      
             }
         </script>
         <link rel="stylesheet" type="text/css"  href="css/wykop.css" />
         <style>
-            html {
-                overflow: hidden;
-                width: 650px;
+            html {                
+                width: 640px;
+                /*                height: 240px;*/
+            }
+            body {
+                background-color: #fff !important; 
             }
 
+            #notificationsContainer {
+                min-height: 300px;
+            }
             .wrapper {
-                width: 650px !important;
+                min-width: 575px !important;
+                /*                padding: 0*/
             }
         </style>
     </head>
     <body>
-        <div id="illustration">
-            <div id="body-container">
-                <div class="wrapper">
-                    <div id="content">
-                        <ol class="entry">
-                            <li id="entry"></li>
-                        </ol>
-
-                        <ul id="notification" class="entry-list-notification">
-
-                        </ul>
-                    </div>
+        <div class="wrapper clr">
+            <div id="body-containter" class="bgfff">
+                <div id="entry">
                 </div>
+            </div>
+        </div>
+
+        <div class="bgfff layer shadow pding10 wrapper">
+            <div class="fblock overa h100" id="notificationsContainer">
+                <ul id="notifications" class="small">
+
+                </ul>
             </div>
         </div>
     </body>
