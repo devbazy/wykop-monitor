@@ -18,12 +18,16 @@ if(document.getElementById('header-container')){
 //    data.notifications = result;
 //}
 
-document.getElementById('notificationsBtn').addEventListener('click', function(){
-    var spans = document.querySelector('#notificationsBtn span');
-    if(spans[1]){
-        document.getElementById('notificationsBtn').removeChild(spans[1]);
-    }
-});
+if(document.getElementById('notificationsBtn')){
+    document.getElementById('notificationsBtn').addEventListener('click', function(){
+        var spans = document.querySelector('#notificationsBtn span');
+        if(spans[1]){
+            document.getElementById('notificationsBtn').removeChild(spans[1]);
+        }
+    });
+}
+
+console.log(data);
 
 chrome.extension.sendRequest(data, function(answer){
     if(answer.news){
